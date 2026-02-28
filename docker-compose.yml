@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: subscription-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: subscriptions
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d subscriptions"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: subscription-service
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: postgres://app:app@db:5432/subscriptions?sslmode=disable
+      LOG_LEVEL: "0"
+      LOG_FORMAT: "json"
+      HTTP_PORT: "8081"
+      GIN_MODE: "release"
+    ports:
+      - "8081:8081"
+
+volumes:
+  pgdata:

@@ -87,7 +87,7 @@ func (s *SubService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSub
 		s.logger.Warn().
 			Str("id", id.String()).
 			Msg("Update subscription: not found")
-		return nil, fmt.Errorf("Update subscription: not found id ")
+		return nil, fmt.Errorf("subscription not found")
 	}
 
 	// 2. Применяем partial update
@@ -113,6 +113,13 @@ func (s *SubService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSub
 			Str("id", id.String()).
 			Msg("Update subscription: failed to update subscription")
 		return nil, fmt.Errorf("repository error: %w", err)
+	}
+
+	if result == nil {
+		s.logger.Warn().
+			Str("id", id.String()).
+			Msg("Update subscription: not found in repository")
+		return nil, fmt.Errorf("subscription not found")
 	}
 
 	s.logger.Info().
@@ -153,6 +160,13 @@ func (s *SubService) GetById(ctx context.Context, id uuid.UUID) (*models.Subscri
 			Str("subscriptionId", id.String()).
 			Msg("Failed to fetch subscription from repository")
 		return nil, fmt.Errorf("failed to get subscription: %w", err)
+	}
+
+	if subscription == nil {
+		s.logger.Warn().
+			Str("subscriptionId", id.String()).
+			Msg("Subscription not found")
+		return nil, fmt.Errorf("subscription not found")
 	}
 
 	s.logger.Info().
@@ -206,11 +220,31 @@ func (s *SubService) CalculateTotalCost(ctx context.Context, req dto.CostCalcula
 		Interface("filters", req).
 		Msg("Calculating total cost")
 
+	var userID *uuid.UUID
+	if req.UserID != uuid.Nil {
+		userID = &req.UserID
+	}
+
+	var serviceName *string
+	if req.ServiceName != "" {
+		serviceName = &req.ServiceName
+	}
+
+	var from *time.Time
+	if !req.From.IsZero() {
+		from = &req.From
+	}
+
+	var to *time.Time
+	if !req.To.IsZero() {
+		to = &req.To
+	}
+
 	filter := &filters.SubFilter{
-		UserID:      &req.UserID,
-		ServiceName: &req.ServiceName,
-		From:        &req.From,
-		To:          &req.To,
+		UserID:      userID,
+		ServiceName: serviceName,
+		From:        from,
+		To:          to,
 	}
 
 	total, err := s.repo.SumSubscriptionsCost(ctx, filter)

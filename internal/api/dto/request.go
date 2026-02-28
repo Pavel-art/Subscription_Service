@@ -22,8 +22,8 @@ type UpdateSubscriptionRequest struct {
 }
 
 type CostCalculationQueryRequest struct {
-	UserID      uuid.UUID `json:"user_id"`
-	ServiceName string    `json:"service_name"`
-	From        time.Time `json:"from"`
-	To          time.Time `json:"to"`
+	UserID      uuid.UUID `json:"user_id" form:"user_id"`
+	ServiceName string    `json:"service_name" form:"service_name"`
+	From        time.Time `json:"from" form:"from"`
+	To          time.Time `json:"to" form:"to"`
 }

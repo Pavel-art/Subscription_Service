@@ -28,6 +28,8 @@ func NewHandler(r *gin.Engine, s app_interfaces.ISubService, l *zerolog.Logger) 
 }
 
 func (h *Handler) registerRoutes() {
+	h.route.GET("/health", h.Health)
+
 	api := h.route.Group("/api/v1")
 	{
 		subs := api.Group("/subscriptions")
@@ -42,12 +44,21 @@ func (h *Handler) registerRoutes() {
 	}
 }
 
+func (h *Handler) Health(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
 func (h *Handler) Create(ctx *gin.Context) {
 	h.customLogger.Debug().Msg("Create subscription: started")
 
 	var request dto.CreateSubscriptionRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		h.customLogger.Error().Err(err).Msg("Create subscription: invalid request")
+		h.customLogger.
+			Error().
+			Err(err).
+			Msg("Create subscription: invalid request")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

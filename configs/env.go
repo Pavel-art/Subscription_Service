@@ -57,3 +57,13 @@ func NewLogConfig() *LogConfig {
 		Format: getString("LOG_FORMAT", "json"),
 	}
 }
+
+type ServerConfig struct {
+	Port string
+}
+
+func NewServerConfig() *ServerConfig {
+	return &ServerConfig{
+		Port: getString("HTTP_PORT", "8081"),
+	}
+}
