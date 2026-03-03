@@ -38,7 +38,7 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-Сервис будет доступен по адресу: `http://localhost:8080`
+Сервис будет доступен по адресу: `http://localhost:8081`
 
 ## 📚 API Документация
 
